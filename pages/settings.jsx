@@ -6,7 +6,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { FiCheck, FiAlertCircle } from "react-icons/fi";
 
 const HEX_PATTERN = /^#[0-9A-Fa-f]{6}$/;
-const DEFAULT_COLOR = "#93C572";
+const DEFAULT_COLOR = "#87A96B";
 const SHADE_STEPS = { 50: 0.9, 100: 0.78, 500: 0.15, 600: 0, 700: -0.15, 900: -0.45 };
 
 function hexToRgb(hex) {
@@ -71,7 +71,7 @@ export default function ThemeSettings() {
 
   const save = async () => {
     if (!HEX_PATTERN.test(color)) {
-      setMessage({ type: "error", text: "Enter a valid hex color, e.g. #93C572." });
+      setMessage({ type: "error", text: "Enter a valid hex color, e.g. #87A96B." });
       return;
     }
     setSaving(true);

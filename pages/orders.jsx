@@ -228,7 +228,7 @@ export default function Orders() {
                         {o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                       </td>
                       <td className="px-5 py-3.5">
-                        <button onClick={() => router.push(`/orders/${o.id}`)}
+                        <button onClick={() => router.push(`/orders/view?id=${o.id}`)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#203466]/10 text-[#203466] text-xs font-semibold hover:bg-[#203466]/20 transition-colors">
                           <FiEye size={13} /> View
                         </button>
@@ -260,7 +260,7 @@ export default function Orders() {
                     <span className="font-semibold text-gray-800 text-sm">₹{parseFloat(o.pay_amt || 0).toLocaleString("en-IN")}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400">{o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : ""}</span>
-                      <button onClick={() => router.push(`/orders/${o.id}`)}
+                      <button onClick={() => router.push(`/orders/view?id=${o.id}`)}
                         className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#203466]/10 text-[#203466] text-xs font-semibold">
                         <FiEye size={12} /> View
                       </button>

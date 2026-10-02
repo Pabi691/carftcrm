@@ -123,7 +123,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {recent.map((order) => (
-                    <tr key={order.id} onClick={() => router.push(`/orders/${order.id}`)}
+                    <tr key={order.id} onClick={() => router.push(`/orders/view?id=${order.id}`)}
                       className="hover:bg-gray-50/70 cursor-pointer transition-colors">
                       <td className="px-5 py-3.5 font-mono font-bold text-gray-700">#{order.id}</td>
                       <td className="px-5 py-3.5 font-medium text-gray-700">{getName(order)}</td>
@@ -140,7 +140,7 @@ export default function Dashboard() {
             {/* Mobile cards */}
             <div className="lg:hidden divide-y divide-gray-50">
               {recent.map((order) => (
-                <div key={order.id} onClick={() => router.push(`/orders/${order.id}`)}
+                <div key={order.id} onClick={() => router.push(`/orders/view?id=${order.id}`)}
                   className="px-4 py-3.5 cursor-pointer active:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-mono font-bold text-gray-700 text-sm">#{order.id}</span>

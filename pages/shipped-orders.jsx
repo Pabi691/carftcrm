@@ -106,7 +106,7 @@ export default function ShippedOrders() {
                           {o.updated_at ? new Date(o.updated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                         </td>
                         <td className="px-5 py-3.5">
-                          <button onClick={() => router.push(`/orders/${o.id}`)}
+                          <button onClick={() => router.push(`/orders/view?id=${o.id}`)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#203466]/10 text-[#203466] text-xs font-semibold hover:bg-[#203466]/20">
                             <FiEye size={12} /> View
                           </button>
@@ -122,7 +122,7 @@ export default function ShippedOrders() {
                 const status = getStatus(o);
                 const s = STATUS_STYLES[status] || STATUS_STYLES.Shipped;
                 return (
-                  <div key={o.id} className="px-4 py-3.5" onClick={() => router.push(`/orders/${o.id}`)}>
+                  <div key={o.id} className="px-4 py-3.5" onClick={() => router.push(`/orders/view?id=${o.id}`)}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono font-bold text-gray-700 text-sm">#{o.id}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-lg font-semibold ${s.bg} ${s.text}`}>{status}</span>

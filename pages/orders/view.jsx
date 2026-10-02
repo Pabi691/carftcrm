@@ -170,7 +170,7 @@ export default function OrderDetail() {
           <FiArrowLeft size={16} /> Back to Orders
         </button>
         {order && (
-          <Link href={`/orders/${id}/invoice`} target="_blank"
+          <Link href={`/orders/invoice?id=${id}`} target="_blank"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#203466] hover:bg-[#152548] transition-colors">
             <FiFileText size={15} /> View Invoice
           </Link>

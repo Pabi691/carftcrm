@@ -136,7 +136,7 @@ export default function Products() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
-                          <button onClick={() => router.push(`/products/${p.id}/edit`)}
+                          <button onClick={() => router.push(`/products/edit?id=${p.id}`)}
                             className="w-8 h-8 rounded-lg bg-[#203466]/10 text-[#203466] flex items-center justify-center hover:bg-[#203466]/20 transition-colors">
                             <FiEdit2 size={13} />
                           </button>
@@ -175,7 +175,7 @@ export default function Products() {
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => router.push(`/products/${p.id}/edit`)} className="w-8 h-8 rounded-lg bg-[#203466]/10 text-[#203466] flex items-center justify-center"><FiEdit2 size={13} /></button>
+                      <button onClick={() => router.push(`/products/edit?id=${p.id}`)} className="w-8 h-8 rounded-lg bg-[#203466]/10 text-[#203466] flex items-center justify-center"><FiEdit2 size={13} /></button>
                       <button onClick={() => remove(p.id)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center"><FiTrash2 size={13} /></button>
                     </div>
                   </div>

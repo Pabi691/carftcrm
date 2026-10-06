@@ -16,7 +16,7 @@ export default function ProcessOrders() {
 
   // Selection + assignment state
   const [selected, setSelected]         = useState({}); // { [orderId]: sl_no }
-  const [shippingProvider, setShippingProvider] = useState("shiprocket"); // only option for now
+  const [shippingProvider, setShippingProvider] = useState("delhivery"); // Delhivery is the default courier
   const [orderStatus, setOrderStatus]   = useState("");
   const [submitting, setSubmitting]     = useState(false);
   const [msg, setMsg]                   = useState(null); // { text, ok }
@@ -76,12 +76,13 @@ export default function ProcessOrders() {
     setSubmitting(true); setMsg(null);
     try {
       const order_list = selectedIds.map((id) => ({ id, sl_no: selected[id] }));
-      // Shiprocket is the only provider for now — routed to its own endpoint,
-      // which creates the shipment and stores shiprocket_awb/status per order
-      // (the same fields the automatic checkout-time attempt already uses).
-      const res = await api("post", "/assign_shiprocket_to_orders", {
+      // One endpoint for both couriers; it creates the shipment and stores the
+      // waybill in that courier's columns, the same ones the automatic
+      // checkout-time attempt uses.
+      const res = await api("post", "/assign_courier_to_orders", {
         order_list,
         order_status: parseInt(orderStatus),
+        provider: shippingProvider,
       });
       if (res.data?.status) {
         setMsg({ text: res.data.message || "Orders assigned successfully!", ok: true });
@@ -211,6 +212,7 @@ export default function ProcessOrders() {
           <div className="flex-1">
             <label className="text-xs text-gray-500 font-semibold block mb-1">Shipping Provider</label>
             <select value={shippingProvider} onChange={(e) => setShippingProvider(e.target.value)} className={SELECT_CLS + " w-full"}>
+              <option value="delhivery">Delhivery</option>
               <option value="shiprocket">Shiprocket</option>
             </select>
           </div>

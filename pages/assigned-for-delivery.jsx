@@ -91,7 +91,7 @@ export default function AssignedForDelivery() {
                         <p className="text-xs text-gray-400">{o.customer?.mobile_number || ""}</p>
                       </td>
                       <td className="px-5 py-3.5 font-semibold text-gray-800">₹{parseFloat(o.pay_amt || 0).toLocaleString("en-IN")}</td>
-                      <td className="px-5 py-3.5 font-mono text-xs text-gray-600">{o.shiprocket_awb || "—"}</td>
+                      <td className="px-5 py-3.5 font-mono text-xs text-gray-600">{o.delhivery_awb || o.shiprocket_awb || "—"}</td>
                       <td className="px-5 py-3.5 text-gray-400 text-xs">
                         {o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                       </td>
@@ -114,7 +114,7 @@ export default function AssignedForDelivery() {
                     <span className="text-xs px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 font-semibold">Ready For Ship</span>
                   </div>
                   <p className="text-sm font-medium text-gray-800">{getName(o)}</p>
-                  {o.shiprocket_awb && <p className="text-xs font-mono text-gray-500 mt-0.5">AWB: {o.shiprocket_awb}</p>}
+                  {(o.delhivery_awb || o.shiprocket_awb) && <p className="text-xs font-mono text-gray-500 mt-0.5">AWB: {o.delhivery_awb || o.shiprocket_awb}</p>}
                   <div className="flex items-center justify-between mt-1.5">
                     <span className="font-semibold text-gray-800 text-sm">₹{parseFloat(o.pay_amt || 0).toLocaleString("en-IN")}</span>
                     <span className="text-xs text-gray-400">{o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : ""}</span>

@@ -71,6 +71,28 @@ function liveStatusStyle(label) {
   return { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400" };
 }
 
+// Delhivery is the default courier, so its waybill is what this column shows;
+// Shiprocket is only reported when an order went out that way instead.
+function CourierBadge({ order }) {
+  if (order.delhivery_awb) {
+    return (
+      <span title={`Delhivery AWB ${order.delhivery_awb}`}
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-700">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Delhivery
+      </span>
+    );
+  }
+  if (!order.shiprocket_awb && !order.shiprocket_live_status && order.delhivery_status === "failed") {
+    return (
+      <span title={order.delhivery_last_error || "Delhivery assignment failed"}
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-600">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-400" /> Failed
+      </span>
+    );
+  }
+  return <ShiprocketBadge order={order} />;
+}
+
 function ShiprocketBadge({ order }) {
   if (order.shiprocket_live_status) {
     const s = liveStatusStyle(order.shiprocket_live_status);
@@ -203,7 +225,7 @@ export default function Orders() {
                     <th className="px-5 py-3.5 text-left">Customer</th>
                     <th className="px-5 py-3.5 text-left">Amount</th>
                     <th className="px-5 py-3.5 text-left">Status</th>
-                    <th className="px-5 py-3.5 text-left">Shiprocket</th>
+                    <th className="px-5 py-3.5 text-left">Courier</th>
                     <th className="px-5 py-3.5 text-left">Date</th>
                     <th className="px-5 py-3.5 text-left">Action</th>
                   </tr>
@@ -223,7 +245,7 @@ export default function Orders() {
                       </td>
                       <td className="px-5 py-3.5 font-semibold text-gray-800">₹{parseFloat(o.pay_amt || 0).toLocaleString("en-IN")}</td>
                       <td className="px-5 py-3.5"><StatusBadge status={getStatus(o)} /></td>
-                      <td className="px-5 py-3.5"><ShiprocketBadge order={o} /></td>
+                      <td className="px-5 py-3.5"><CourierBadge order={o} /></td>
                       <td className="px-5 py-3.5 text-gray-400 text-xs">
                         {o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                       </td>
@@ -245,7 +267,7 @@ export default function Orders() {
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-mono font-bold text-gray-700 text-sm">#{o.id}</span>
                     <div className="flex items-center gap-1.5">
-                      <ShiprocketBadge order={o} />
+                      <CourierBadge order={o} />
                       <StatusBadge status={getStatus(o)} />
                     </div>
                   </div>

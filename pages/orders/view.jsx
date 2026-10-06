@@ -74,6 +74,10 @@ export default function OrderDetail() {
   const [liveStatus, setLiveStatus] = useState(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveError, setLiveError]     = useState("");
+  const [dlvBusy, setDlvBusy]       = useState("");   // "create" | "track" | "label"
+  const [dlvError, setDlvError]     = useState("");
+  const [dlvMsg, setDlvMsg]         = useState("");
+  const [dlvTrack, setDlvTrack]     = useState(null);
 
   useEffect(() => {
     if (!ready || !id) return;
@@ -133,6 +137,60 @@ export default function OrderDetail() {
       setLiveError(err.response?.data?.message || "Could not fetch live status.");
     }
     setLiveLoading(false);
+  };
+
+  // Delhivery is the default courier; orders usually arrive here already
+  // assigned. These cover a failed auto-assign and day-to-day tracking.
+  const createDelhivery = async () => {
+    setDlvBusy("create"); setDlvError(""); setDlvMsg("");
+    try {
+      const res = await api("get", `/createDelhiveryOrder/${order.id}`);
+      if (res.data?.status && res.data?.waybill) {
+        setOrder((o) => ({ ...o, delhivery_awb: res.data.waybill, delhivery_status: "created", delhivery_last_error: null }));
+        setDlvMsg(res.data.message || "Shipment created.");
+      } else {
+        setDlvError(res.data?.message || "Delhivery did not return a waybill.");
+      }
+    } catch (err) {
+      setDlvError(err.response?.data?.message || "Could not create the shipment.");
+    }
+    setDlvBusy("");
+  };
+
+  const trackDelhivery = async () => {
+    if (!order?.delhivery_awb) return;
+    setDlvBusy("track"); setDlvError(""); setDlvTrack(null);
+    try {
+      const res = await api("get", `/delhiveryTracking/${order.delhivery_awb}`);
+      const shipment = res.data?.data?.ShipmentData?.[0]?.Shipment;
+      if (shipment) {
+        setDlvTrack({
+          status: shipment.Status?.Status || "—",
+          instructions: shipment.Status?.Instructions || "",
+          location: shipment.Status?.StatusLocation || "",
+          at: shipment.Status?.StatusDateTime || "",
+        });
+      } else {
+        setDlvError("Delhivery has no tracking for this waybill yet.");
+      }
+    } catch (err) {
+      setDlvError(err.response?.data?.message || "Could not fetch tracking.");
+    }
+    setDlvBusy("");
+  };
+
+  const openDelhiveryLabel = async () => {
+    if (!order?.delhivery_awb) return;
+    setDlvBusy("label"); setDlvError("");
+    try {
+      const res = await api("get", `/downloadDelhiveryLabel/${order.delhivery_awb}`, null, { responseType: "blob" });
+      const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      setDlvError("Could not fetch the label PDF.");
+    }
+    setDlvBusy("");
   };
 
   const updateStatus = async () => {
@@ -315,7 +373,69 @@ export default function OrderDetail() {
               <InfoRow label="Note"      value={order.note} />
             </div>
 
-            {/* Shiprocket */}
+            {/* Delhivery — the default courier */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <FiTruck size={15} className="text-[#203466]" />
+                <h3 className="font-bold text-gray-800 text-sm">Delhivery</h3>
+                <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-gray-400">Default</span>
+              </div>
+
+              {order.delhivery_awb ? (
+                <>
+                  <InfoRow label="Waybill" value={order.delhivery_awb} />
+                  <InfoRow label="Assigned" value="Yes" />
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <button onClick={trackDelhivery} disabled={!!dlvBusy}
+                      className="inline-flex items-center justify-center gap-2 border border-gray-200 hover:border-[#203466] text-gray-700 font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50">
+                      <FiRefreshCw size={14} className={dlvBusy === "track" ? "animate-spin" : ""} />
+                      {dlvBusy === "track" ? "Checking..." : "Track"}
+                    </button>
+                    <button onClick={openDelhiveryLabel} disabled={!!dlvBusy}
+                      className="inline-flex items-center justify-center gap-2 border border-gray-200 hover:border-[#203466] text-gray-700 font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50">
+                      <FiFileText size={14} />
+                      {dlvBusy === "label" ? "Opening..." : "Label"}
+                    </button>
+                  </div>
+                  {dlvTrack && (
+                    <div className="mt-3 pt-3 border-t border-gray-50">
+                      <p className="text-xs text-gray-400 mb-1">Live courier status</p>
+                      <p className="text-sm font-semibold text-gray-800">{dlvTrack.status}</p>
+                      {dlvTrack.instructions && <p className="text-xs text-gray-500 mt-0.5">{dlvTrack.instructions}</p>}
+                      {(dlvTrack.location || dlvTrack.at) && (
+                        <p className="text-[11px] text-gray-400 mt-1">
+                          {dlvTrack.location}
+                          {dlvTrack.at ? ` · ${new Date(dlvTrack.at).toLocaleString("en-IN")}` : ""}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {order.delhivery_status === "failed" ? (
+                    <>
+                      <p className="text-sm font-semibold text-red-600 mb-1">Assignment failed</p>
+                      <p className="text-xs text-gray-500 mb-3">{order.delhivery_last_error || "No error details recorded."}</p>
+                    </>
+                  ) : order.delhivery_status === "awaiting_payment" ? (
+                    <p className="text-gray-400 text-sm mb-3">Waiting for payment before the shipment is created.</p>
+                  ) : (
+                    <p className="text-gray-400 text-sm mb-3">Not yet assigned to Delhivery.</p>
+                  )}
+                  <button onClick={createDelhivery} disabled={!!dlvBusy}
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#203466] hover:bg-[#1a2a52] text-white font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50">
+                    <FiTruck size={14} />
+                    {dlvBusy === "create" ? "Creating..." : order.delhivery_status === "failed" ? "Try again" : "Create shipment"}
+                  </button>
+                </>
+              )}
+
+              {dlvMsg && <p className="text-xs text-green-600 mt-2">{dlvMsg}</p>}
+              {dlvError && <p className="text-xs text-red-500 mt-2">{dlvError}</p>}
+            </div>
+
+            {/* Shiprocket — manual fallback */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3">
                 <FiTruck size={15} className="text-[#203466]" />
@@ -353,7 +473,7 @@ export default function OrderDetail() {
                   <p className="text-xs text-gray-500">{order.shiprocket_last_error || "No error details recorded."}</p>
                 </>
               ) : (
-                <p className="text-gray-400 text-sm">Not yet assigned to Shiprocket.</p>
+                <p className="text-gray-400 text-sm">Not used for this order. Delhivery is the default courier.</p>
               )}
             </div>
 

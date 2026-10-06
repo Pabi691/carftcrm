@@ -48,7 +48,9 @@ export const AdminProvider = ({ children }) => {
     localStorage.removeItem("cw_admin_user");
   };
 
-  const api = useCallback(async (method, endpoint, body = null) => {
+  // `config` passes axios options through — the Delhivery label needs
+  // responseType: "blob" to come back as a PDF rather than a mangled string.
+  const api = useCallback(async (method, endpoint, body = null, config = {}) => {
     const isFormData = body instanceof FormData;
     const headers = {
       Authorization: `Bearer ${adminToken}`,
@@ -56,9 +58,9 @@ export const AdminProvider = ({ children }) => {
       ...(!isFormData && { "Content-Type": "application/json" }),
     };
     const url = `${API_BASE}${endpoint}`;
-    if (method === "get")    return axios.get(url, { headers });
-    if (method === "delete") return axios.delete(url, { headers });
-    return axios[method](url, body, { headers });
+    if (method === "get")    return axios.get(url, { headers, ...config });
+    if (method === "delete") return axios.delete(url, { headers, ...config });
+    return axios[method](url, body, { headers, ...config });
   }, [adminToken]);
 
   return (

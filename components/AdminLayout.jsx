@@ -7,7 +7,7 @@ import {
   FiMenu, FiBell, FiLogOut, FiChevronRight, FiX, FiTruck,
   FiRotateCcw, FiAward, FiDroplet, FiMaximize2,
   FiChevronDown, FiChevronUp, FiPlus, FiBox, FiNavigation, FiBriefcase,
-  FiCheckCircle, FiCreditCard, FiStar, FiImage, FiSettings,
+  FiCheckCircle, FiCreditCard, FiStar, FiImage, FiSettings, FiLock,
 } from "react-icons/fi";
 
 const NAV = [
@@ -47,8 +47,11 @@ const NAV = [
   { href: "/customers",    label: "Customers",    icon: FiUsers },
   { href: "/distributors", label: "Distributors", icon: FiBriefcase },
   { href: "/coupons",      label: "Coupons",      icon: FiGift },
-  { href: "/homepage-banners", label: "Homepage Banners", icon: FiImage },
+  // Hidden for now — the banners page needs work. The page itself is still
+  // at /homepage-banners, it just is not linked.
+  // { href: "/homepage-banners", label: "Homepage Banners", icon: FiImage },
   { href: "/settings",         label: "Theme Settings",   icon: FiSettings },
+  { href: "/change-password",  label: "Change Password",  icon: FiLock },
 ];
 
 function NavGroup({ item, onClose }) {

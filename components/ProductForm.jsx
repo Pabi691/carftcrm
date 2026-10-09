@@ -8,7 +8,7 @@ const INPUT = "w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm ou
 const EMPTY = {
   prod_name: "", prod_type: "simple", sku: "", hsn_code: "", prod_desc: "",
   regular_price: "", sale_price: "", stock_qty: "", pack_qty: "1",
-  pack_price: "", min_order_qty: "", brand_id: "", status: "1",
+  pack_price: "", min_order_qty: "1", brand_id: "", status: "1",
   is_sale: "1", is_returnable: "0", is_cod: "1",
   product_tag: "", product_quality: "",
 };
@@ -100,6 +100,9 @@ export default function ProductForm({ productId, initialData, onSaved }) {
     if (!form.regular_price || !form.sale_price) return setError("Regular price and sale price are required");
     if (!form.stock_qty)                         return setError("Stock quantity is required");
     if (!form.pack_qty || !form.pack_price)      return setError("Pack qty and pack price are required");
+    // min_order_qty is NOT NULL in the database — an empty one used to
+    // fail at the insert with a raw SQL error.
+    if (!form.min_order_qty)                     return setError("Min order qty is required");
     if (categoryIds.length === 0)                return setError("Select at least one category");
     if (!isEdit && !primaryFile)                 return setError("Primary image is required for new products");
 
@@ -111,7 +114,23 @@ export default function ProductForm({ productId, initialData, onSaved }) {
       categoryIds.forEach((id, i) => fd.append(`product_categories[${i}][id]`, id));
       if (primaryFile) fd.append("primary_img", primaryFile);
 
-      await api("post", isEdit ? `/update_product/${productId}` : "/create_product", fd);
+      const res = await api("post", isEdit ? `/update_product/${productId}` : "/create_product", fd);
+
+      // The API answers 200 even when it refused the save, with status:false
+      // and the reason in error_message. Without this check a validation
+      // failure, a duplicate name or a failed image upload looked like a
+      // successful save and the product silently never existed.
+      if (res.data?.status === false) {
+        const reason = res.data.error_message || res.data.message;
+        const detail = res.data.error_message_old;
+        const firstField = detail && typeof detail === "object"
+          ? Object.values(detail).flat()[0]
+          : null;
+        setError(firstField || (typeof reason === "string" ? reason : "Save failed."));
+        setSaving(false);
+        return;
+      }
+
       if (isEdit) {
         setSuccess("Product updated successfully!");
         onSaved?.();
@@ -184,7 +203,7 @@ export default function ProductForm({ productId, initialData, onSaved }) {
               <Field label="Stock Qty *">
                 <input type="number" value={form.stock_qty} onChange={set("stock_qty")} className={INPUT} placeholder="0" min="0" />
               </Field>
-              <Field label="Min Order Qty">
+              <Field label="Min Order Qty *">
                 <input type="number" value={form.min_order_qty} onChange={set("min_order_qty")} className={INPUT} placeholder="1" min="1" />
               </Field>
               <Field label="Pack Qty *">
